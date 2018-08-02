@@ -1180,7 +1180,7 @@ protected:
 #pragma endregion
 #pragma region about_win
 		about_win.width = 200;
-		about_win.height = 60;
+		about_win.height = 80;
 		about_win.x = (m_nScreenWidth - about_win.width) / 2;
 		about_win.y = (m_nScreenHeight - about_win.height) / 2;
 		about_win.title = "ABOUT";
@@ -1201,7 +1201,12 @@ protected:
 		about_text_3.x = (about_win.width - str_length(about_text_3.content)) / 2;
 		about_text_3.y = about_win.height / 2 + 3;
 
-		about_win.labels = { about_text_1, about_text_2, about_text_3 };
+		Label about_text_4;
+		about_text_4.content = "BASED ON OLC'S GAME LIBRARY.";
+		about_text_4.x = (about_win.width - str_length(about_text_4.content)) / 2;
+		about_text_4.y = about_win.height / 2 + 16;
+
+		about_win.labels = { about_text_1, about_text_2, about_text_3, about_text_4 };
 #pragma endregion
 #pragma region funcs_win
 		funcs_win.width = 120;
