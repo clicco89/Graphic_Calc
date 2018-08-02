@@ -1204,7 +1204,7 @@ protected:
 		Label about_text_4;
 		about_text_4.content = "BASED ON OLC'S GAME LIBRARY.";
 		about_text_4.x = (about_win.width - str_length(about_text_4.content)) / 2;
-		about_text_4.y = about_win.height / 2 + 16;
+		about_text_4.y = about_win.height / 2 + 24;
 
 		about_win.labels = { about_text_1, about_text_2, about_text_3, about_text_4 };
 #pragma endregion
