@@ -105,7 +105,7 @@ public:
 
 private:
 	//PROGRAM PARAMETERS
-	string version = "0.1 (STABLE)";
+	string version = "0.1.0.1 (STABLE)";
 
 	//UI OBJECTS
 	vector<Function> graph_funcs;
@@ -446,11 +446,11 @@ private:
 		case '1':
 			return
 			{
-				{ 1, 0, 0, 0, 0 },
-				{ 1, 0, 0, 0, 0 },
-				{ 1, 0, 0, 0, 0 },
-				{ 1, 0, 0, 0, 0 },
-				{ 1, 0, 0, 0, 0 },
+				{ 1, 1, 0, 0, 0 },
+				{ 0, 1, 0, 0, 0 },
+				{ 0, 1, 0, 0, 0 },
+				{ 0, 1, 0, 0, 0 },
+				{ 0, 1, 0, 0, 0 },
 			};
 			break;
 		case '2':
@@ -693,6 +693,16 @@ private:
 				{ 0, 0, 0, 0, 0 },
 			};
 			break;
+		case '|':
+			return
+			{
+				{ 1, 0, 0, 0, 0 },
+				{ 1, 0, 0, 0, 0 },
+				{ 1, 0, 0, 0, 0 },
+				{ 1, 0, 0, 0, 0 },
+				{ 1, 0, 0, 0, 0 },
+			};
+			break;
 		default:
 			throw invalid_argument("Char unsupported!");
 		}
@@ -837,7 +847,7 @@ private:
 			if (m_keys[VK_RIGHT].bPressed && (textbox.pos + 1) < textbox.content.length()) textbox.pos++;
 #pragma endregion
 #pragma region remove
-			if ((m_keys[VK_BACK].bPressed && textbox.content.length() > 0) || m_keys[VK_DELETE].bPressed)
+			if ((m_keys[VK_BACK].bPressed && textbox.content.length() > 0 && textbox.pos > -1) || m_keys[VK_DELETE].bPressed)
 			{
 				if (m_keys[VK_BACK].bPressed) textbox.pos--;
 				textbox.content.erase(textbox.pos + 1, 1);
@@ -926,6 +936,8 @@ private:
 		//Update
 		if (!changing_depth) ui_updateTextBox(textbox);
 
+		const int min_distance_txt = 7; //Minimum distance in pixel from right before shifting the text
+
 		int x = textbox.x + cont_x,
 			y = textbox.y + cont_y;
 
@@ -933,20 +945,20 @@ private:
 
 		string content = textbox.content.substr(0, textbox.pos);
 		int distance;
-		if (str_length(content) >= (textbox.width - 4))
+		if (str_length(textbox.content.substr(0, textbox.pos + 1)) >= (textbox.width - min_distance_txt))
 		{
-			for (distance = textbox.pos; str_length(textbox.content.substr(distance, textbox.pos - distance + 1)) < (textbox.width - 9); distance--);
+			for (distance = textbox.pos; str_length(textbox.content.substr(distance, textbox.pos - distance + 1)) < (textbox.width - min_distance_txt) && distance > 0; distance--);
 			content = textbox.content.substr(distance, textbox.pos - distance + 1);
 		}
 		else
 		{
-			for (distance = 0; distance < textbox.content.length() && str_length(textbox.content.substr(0, distance)) < (textbox.width - 4); distance++);
+			for (distance = 0; distance < textbox.content.length() && str_length(textbox.content.substr(0, distance)) < (textbox.width - min_distance_txt); distance++);
 			content = textbox.content.substr(0, distance);
 		}
 		
 		str_draw(x + 1, y + 2, content, textbox.focus ? BG_BLACK : BG_DARK_GREY);
 		if(textbox.focus) 
-			str_draw(x + 1 + str_length(content.substr(0, textbox.pos + 1)), y + 2, "_", BG_WHITE);
+			str_draw(x + 1 + str_length(content.substr(0, textbox.pos + 1)), y + 2, "|", BG_WHITE);
 	}
 	void ui_drawListBox(ListBox &listbox, int cont_x, int cont_y)
 	{
