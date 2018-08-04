@@ -739,10 +739,10 @@ private:
 
 		return filled_px;
 	}
-	void str_draw(int x, int y, string content, COLOUR color, int max_chars = 0)
+	void str_draw(int x, int y, string content, COLOUR color)
 	{
 		int filled_px = 0;
-		for (int i = 0; i < content.length() || ((max_chars > 0) ? max_chars : false); i++)
+		for (int i = 0; i < content.length(); i++)
 		{
 			vector<vector<bool>> fillers = str_getCharFillers(content[i]);
 			int width = str_getCharWidth(fillers);
@@ -847,7 +847,7 @@ private:
 			if (m_keys[VK_RIGHT].bPressed && (textbox.pos + 1) < textbox.content.length()) textbox.pos++;
 #pragma endregion
 #pragma region remove
-			if ((m_keys[VK_BACK].bPressed && textbox.content.length() > 0 && textbox.pos > -1) || m_keys[VK_DELETE].bPressed)
+			if ((m_keys[VK_BACK].bPressed && textbox.pos > -1) || m_keys[VK_DELETE].bPressed)
 			{
 				if (m_keys[VK_BACK].bPressed) textbox.pos--;
 				textbox.content.erase(textbox.pos + 1, 1);
