@@ -209,7 +209,9 @@ double parsePostfix(vector<string> postfix_expr, double x)
 		{
 			double a, b, result;
 			
-			if (nums.size() < 2) error("Syntax error!");
+			if (nums.size() < 2)
+				error("Syntax error!"); 
+
 			b = nums.top();
 			nums.pop();
 			a = nums.top();

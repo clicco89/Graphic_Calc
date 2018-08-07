@@ -10,6 +10,7 @@
 #include <vector>
 #include <stdexcept>
 #include <functional>
+#include <time.h>
 #include "expr.h"
 #include "olcConsoleGameEngine.h"
 
@@ -1159,6 +1160,9 @@ private:
 protected:
 	virtual bool OnUserCreate() 
 	{
+		//Init random generator
+		srand(time(0));
+
 		//Init functions array
 		graph_funcs = { };
 
@@ -1342,6 +1346,25 @@ protected:
 				{
 					show_error(ex.what());
 					return;
+				}
+
+				bool done = false;
+				while (!done)
+				{
+					try
+					{
+						parsePostfix(func.postfix_code, rand() % 1000 + (rand() % 100) / 100);
+						done = true;
+					}
+					catch (exception ex)
+					{
+						if (string(ex.what()).find("Syntax error!") != -1)
+						{
+							show_error("Syntax error!");
+							done = true;
+						}
+						return;
+					}
 				}
 
 				func.color = funceditor_win.listboxes[0].headers[funceditor_win.listboxes[0].sel].at(0);
