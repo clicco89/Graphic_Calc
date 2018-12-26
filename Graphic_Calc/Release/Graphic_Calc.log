@@ -26,8 +26,8 @@ d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1164): war
 d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1441): warning C4244: '=': conversione da 'double' a 'int'. Possibile perdita di dati.
 d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1442): warning C4244: '=': conversione da 'double' a 'int'. Possibile perdita di dati.
   Generazione codice in corso...
-  26 of 1711 functions ( 1.5%) were compiled, the rest were copied from previous compilation.
-    25 functions were new in current compilation
-    1 functions had inline decision re-evaluated but remain unchanged
+  3 of 1711 functions ( 0.2%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    3 functions had inline decision re-evaluated but remain unchanged
   Generazione codice terminata
   Graphic_Calc.vcxproj -> D:\Users\Matteo\Documents\Dev\Vari\Graphic_Calc\Release\Graphic_Calc.exe

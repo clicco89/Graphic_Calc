@@ -199,8 +199,18 @@ double parsePostfix(vector<string> postfix_expr, double x)
 			else if (func == "cos") nums.push(cos(argument));
 			else if (func == "sin") nums.push(sin(argument));
 			else if (func == "tan") nums.push(tan(argument));
+			else if (func == "acos") nums.push(acos(argument));
+			else if (func == "asin") nums.push(asin(argument));
+			else if (func == "atan") nums.push(atan(argument));
+			else if (func == "cosh") nums.push(cosh(argument));
+			else if (func == "sinh") nums.push(sinh(argument));
+			else if (func == "tanh") nums.push(tanh(argument));
+			else if (func == "acosh") nums.push(acosh(argument));
+			else if (func == "asinh") nums.push(asinh(argument));
+			else if (func == "atanh") nums.push(atanh(argument));
 			else if (func == "sqrt") nums.push(sqrt(argument));
 			else if (func == "cbrt") nums.push(cbrt(argument));
+			else if (func == "ln") nums.push(log(argument));
 			else error("Unknokn function!");
 		}
 
