@@ -10,6 +10,7 @@
 #include <vector>
 #include <stdexcept>
 #include <functional>
+#include <algorithm>
 #include <time.h>
 #include "expr.h"
 #include "olcConsoleGameEngine.h"
@@ -83,6 +84,8 @@ struct Window
 	vector<ListBox> listboxes;
 	vector<TextBox> textboxes;
 
+	function<void(void)> onEscape = []{};
+
 	int onClose_depth,
 		child_focus = 0; //Element inside window focused
 };
@@ -152,22 +155,11 @@ private:
 			else error_win_drawn = true;
 		}
 		//Set focus
-		if (error_win.visible)
-		{
-			error_win.focus = true;
-			main_menu.focus = false;
-			about_win.focus = false;
-			funcs_win.focus = false;
-			funceditor_win.focus = false;
-		}
-		else
-		{
-			main_menu.focus = depth == MAIN_MENU;
-			about_win.focus = depth == ABOUT_WIN;
-			funcs_win.focus = depth == FUNCS_WIN;
-			funceditor_win.focus = depth == FUNCEDITOR_WIN;
-		}
-
+		error_win.focus = error_win.visible;
+		main_menu.focus = depth == MAIN_MENU && !error_win.visible;
+		about_win.focus = depth == ABOUT_WIN && !error_win.visible;
+		funcs_win.focus = depth == FUNCS_WIN && !error_win.visible;
+		funceditor_win.focus = depth == FUNCEDITOR_WIN && !error_win.visible;
 	}
 
 	//STRINGS FUNCS
@@ -883,7 +875,11 @@ private:
 	{
 		if (win.focus)
 		{
-			if (m_keys[VK_ESCAPE].bPressed) changeDepth(win.onClose_depth);
+			if (m_keys[VK_ESCAPE].bPressed)
+			{
+				win.onEscape();
+				changeDepth(win.onClose_depth);
+			}
 			if (m_keys[VK_TAB].bPressed || win.child_focus == -1)
 			{
 				if (win.child_focus == (win.buttons.size() + win.listboxes.size() + win.textboxes.size() - 1))
@@ -1129,9 +1125,14 @@ private:
 					color = "YELLOW";
 					break;
 				}
-				av_colors.push_back(color);
+				int color_pos;
+				bool greater = true;
+				for (color_pos = 0; color_pos < av_colors.size() && greater; color_pos++)
+					greater = ((int)color.at(0)) > ((int)av_colors[color_pos].at(0));
+				color_pos -= (color_pos == av_colors.size()) ? 1 : 0;
+				av_colors.insert(av_colors.begin() + color_pos, color);
 
-				openFuncEditor(i, av_colors.size() - 1);
+				openFuncEditor(i, color_pos);
 			});
 		}
 	}
@@ -1281,6 +1282,7 @@ protected:
 					return;
 				}
 				av_colors.push_back(color);
+				sort(av_colors.begin(), av_colors.end(), [](string q, string p) { return ((int)q.at(0)) < ((int)p.at(0)); });
 
 				graph_funcs.erase(graph_funcs.begin() + funcs_win.listboxes[0].sel);
 				updateFuncsListbox();
@@ -1302,35 +1304,7 @@ protected:
 		funceditor_win.x = (m_nScreenWidth - funceditor_win.width) / 2;
 		funceditor_win.y = (m_nScreenHeight - funceditor_win.height) / 2;
 		funceditor_win.title = "NEW FUNCTION";
-		funceditor_win.onClose_depth = FUNCS_WIN;
-
-		Label y_lbl;
-		y_lbl.x = 10;
-		y_lbl.y = 12;
-		y_lbl.content = "Y=";
-
-		Label colors_lbl;
-		colors_lbl.x = 10;
-		colors_lbl.y = 27;
-		colors_lbl.content = "COLORS:";
-
-		TextBox function_txt;
-		function_txt.width = 68;
-		function_txt.x = 22;
-		function_txt.y = 10;
-
-		ListBox colors_list;
-		colors_list.width = funceditor_win.width - 20;
-		colors_list.rows = 6;
-		colors_list.headers = av_colors;
-		colors_list.funcs = { []() {}, []() {}, []() {}, []() {}, []() {}, []() {} };
-		colors_list.x = 10;
-		colors_list.y = 36;
-
-		Button ok_btn;
-		ok_btn.x = 9;
-		ok_btn.y = funceditor_win.height - 19;
-		ok_btn.func = [&] {
+		funceditor_win.onEscape = [&] {
 			if (funceditor_win.textboxes[0].content == "")
 				show_error("FUNCTION EMPTY!");
 			else
@@ -1374,9 +1348,39 @@ protected:
 				else graph_funcs.push_back(func);
 
 				updateFuncsListbox();
-
-				changeDepth(FUNCS_WIN);
 			}
+		};
+		funceditor_win.onClose_depth = FUNCS_WIN;
+
+		Label y_lbl;
+		y_lbl.x = 10;
+		y_lbl.y = 12;
+		y_lbl.content = "Y=";
+
+		Label colors_lbl;
+		colors_lbl.x = 10;
+		colors_lbl.y = 27;
+		colors_lbl.content = "COLORS:";
+
+		TextBox function_txt;
+		function_txt.width = 68;
+		function_txt.x = 22;
+		function_txt.y = 10;
+
+		ListBox colors_list;
+		colors_list.width = funceditor_win.width - 20;
+		colors_list.rows = 6;
+		colors_list.headers = av_colors;
+		colors_list.funcs = { []() {}, []() {}, []() {}, []() {}, []() {}, []() {} };
+		colors_list.x = 10;
+		colors_list.y = 36;
+
+		Button ok_btn;
+		ok_btn.x = 9;
+		ok_btn.y = funceditor_win.height - 19;
+		ok_btn.func = [&] {
+			funceditor_win.onEscape();
+			changeDepth(FUNCS_WIN);
 		};
 		ok_btn.content = "OK";
 
@@ -1405,7 +1409,7 @@ protected:
 	virtual bool OnUserUpdate(float fElapsedTime) 
 	{
 		//Draw & update
- 		ui_drawDepth();
+	 	ui_drawDepth();
 
 		//Graph updater
 		if (depth == GRAPH && !error_win.visible)
