@@ -109,7 +109,7 @@ public:
 
 private:
 	//PROGRAM PARAMETERS
-	string version = "0.1.0.1 (STABLE)";
+	string version = "0.1.0.2 (STABLE)";
 
 	//UI OBJECTS
 	vector<Function> graph_funcs;
@@ -141,25 +141,28 @@ private:
 	bool changing_depth = false;
 	void changeDepth(int new_depth)
 	{
-		depth = new_depth;
-		changing_depth = true;
-
-		//Set visibility
- 		main_menu.visible = depth >= MAIN_MENU;
-		about_win.visible = depth == ABOUT_WIN;
-		funcs_win.visible = depth >= FUNCS_WIN;
-		funceditor_win.visible = depth == FUNCEDITOR_WIN;
-		if (error_win.visible)
+		if (!changing_depth)
 		{
-			if(error_win_drawn) error_win.visible = error_win_drawn = false;
-			else error_win_drawn = true;
+			depth = new_depth;
+			changing_depth = true;
+
+			//Set visibility
+			main_menu.visible = depth >= MAIN_MENU;
+			about_win.visible = depth == ABOUT_WIN;
+			funcs_win.visible = depth >= FUNCS_WIN;
+			funceditor_win.visible = depth == FUNCEDITOR_WIN;
+			if (error_win.visible)
+			{
+				if (error_win_drawn) error_win.visible = error_win_drawn = false;
+				else error_win_drawn = true;
+			}
+			//Set focus
+			error_win.focus = error_win.visible;
+			main_menu.focus = depth == MAIN_MENU && !error_win.visible;
+			about_win.focus = depth == ABOUT_WIN && !error_win.visible;
+			funcs_win.focus = depth == FUNCS_WIN && !error_win.visible;
+			funceditor_win.focus = depth == FUNCEDITOR_WIN && !error_win.visible;
 		}
-		//Set focus
-		error_win.focus = error_win.visible;
-		main_menu.focus = depth == MAIN_MENU && !error_win.visible;
-		about_win.focus = depth == ABOUT_WIN && !error_win.visible;
-		funcs_win.focus = depth == FUNCS_WIN && !error_win.visible;
-		funceditor_win.focus = depth == FUNCEDITOR_WIN && !error_win.visible;
 	}
 
 	//STRINGS FUNCS
@@ -1129,7 +1132,7 @@ private:
 				bool greater = true;
 				for (color_pos = 0; color_pos < av_colors.size() && greater; color_pos++)
 					greater = ((int)color.at(0)) > ((int)av_colors[color_pos].at(0));
-				color_pos -= (color_pos == av_colors.size()) ? 1 : 0;
+				color_pos -= (color_pos == av_colors.size()) ? 0 : 1;
 				av_colors.insert(av_colors.begin() + color_pos, color);
 
 				openFuncEditor(i, color_pos);
@@ -1282,7 +1285,7 @@ protected:
 					return;
 				}
 				av_colors.push_back(color);
-				sort(av_colors.begin(), av_colors.end(), [](string q, string p) { return ((int)q.at(0)) < ((int)p.at(0)); });
+ 				sort(av_colors.begin(), av_colors.end(), [](string q, string p) { return ((int)q.at(0)) < ((int)p.at(0)); });
 
 				graph_funcs.erase(graph_funcs.begin() + funcs_win.listboxes[0].sel);
 				updateFuncsListbox();
@@ -1305,6 +1308,38 @@ protected:
 		funceditor_win.y = (m_nScreenHeight - funceditor_win.height) / 2;
 		funceditor_win.title = "NEW FUNCTION";
 		funceditor_win.onEscape = [&] {
+			if(funceditor_funcpos > -1) 
+				av_colors.erase(av_colors.begin() + funceditor_win.listboxes[0].sel); //Remove color from list
+		};
+		funceditor_win.onClose_depth = FUNCS_WIN;
+
+		Label y_lbl;
+		y_lbl.x = 10;
+		y_lbl.y = 12;
+		y_lbl.content = "Y=";
+
+		Label colors_lbl;
+		colors_lbl.x = 10;
+		colors_lbl.y = 27;
+		colors_lbl.content = "COLORS:";
+
+		TextBox function_txt;
+		function_txt.width = 68;
+		function_txt.x = 22;
+		function_txt.y = 10;
+
+		ListBox colors_list;
+		colors_list.width = funceditor_win.width - 20;
+		colors_list.rows = 6;
+		colors_list.headers = av_colors;
+		colors_list.funcs = { []() {}, []() {}, []() {}, []() {}, []() {}, []() {} };
+		colors_list.x = 10;
+		colors_list.y = 36;
+
+		Button ok_btn;
+		ok_btn.x = 9;
+		ok_btn.y = funceditor_win.height - 19;
+		ok_btn.func = [&] {
 			if (funceditor_win.textboxes[0].content == "")
 				show_error("FUNCTION EMPTY!");
 			else
@@ -1349,37 +1384,6 @@ protected:
 
 				updateFuncsListbox();
 			}
-		};
-		funceditor_win.onClose_depth = FUNCS_WIN;
-
-		Label y_lbl;
-		y_lbl.x = 10;
-		y_lbl.y = 12;
-		y_lbl.content = "Y=";
-
-		Label colors_lbl;
-		colors_lbl.x = 10;
-		colors_lbl.y = 27;
-		colors_lbl.content = "COLORS:";
-
-		TextBox function_txt;
-		function_txt.width = 68;
-		function_txt.x = 22;
-		function_txt.y = 10;
-
-		ListBox colors_list;
-		colors_list.width = funceditor_win.width - 20;
-		colors_list.rows = 6;
-		colors_list.headers = av_colors;
-		colors_list.funcs = { []() {}, []() {}, []() {}, []() {}, []() {}, []() {} };
-		colors_list.x = 10;
-		colors_list.y = 36;
-
-		Button ok_btn;
-		ok_btn.x = 9;
-		ok_btn.y = funceditor_win.height - 19;
-		ok_btn.func = [&] {
-			funceditor_win.onEscape();
 			changeDepth(FUNCS_WIN);
 		};
 		ok_btn.content = "OK";

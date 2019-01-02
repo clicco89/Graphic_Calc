@@ -6,6 +6,8 @@
 #include <stdexcept>
 
 using namespace std;
+#define E 2.71828182846
+#define PI 3.14159265359
 
 #pragma once
 /* HELPERS */
@@ -76,45 +78,21 @@ vector<string> parseInfix(string in_expr)
 	{
 		char token = expr.at(i);
 
-		//Case constant/variable
-		if (token == 'x' || token == 'e' || token == 'p')
+		//function check
+		bool is_func = true;
+		if (isalpha(token))
 		{
-			out_queue.push_back(string(1, token));
+			if (i == expr.length() - 1)
+				is_func = false;
+			else if (!isalpha(expr.at(i + 1)))
+				is_func = false;
 		}
-		//Case number
-		else if ((token - '0') >= 0 && (token - '0') <= 9)
+		else is_func = false;
+		
+		//Case function
+		if (is_func)
 		{
-			string final_num = "";
-			do
-			{
-				final_num += expr.at(i);
-				i++;
-				if (i == expr.length()) break;
-			} while ((expr.at(i) - '0') >= 0 && (expr.at(i) - '0') <= 9 || expr.at(i) == '.');
-			i--;
-
-			if (!isNumber(final_num)) error("Syntax error!");
-
-			out_queue.push_back(final_num);
-		}
-		//Case operator
-		else if (token == '+' || token == '-' || token == '*' || token == '/' || token == '^')
-		{
-			if (op_stack.size() > 0)
-				while (higherOrEqPrecOp(op_stack.top(), token))
-				{
-					out_queue.push_back(string(1, op_stack.top()));
-					op_stack.pop();
-
-					if (op_stack.size() == 0) break; //Exit if there are no elements in stack
-				}
-
-			op_stack.push(token);
-		}
-		//Case F(x)
-		else if (isalpha(token))
-		{
-			//GET THE FUNCTION
+			//get the function
 			string func = "";
 			while (isalpha(expr.at(i)))
 			{
@@ -122,30 +100,68 @@ vector<string> parseInfix(string in_expr)
 				i++;
 				if (i == expr.length()) error("Missing '('!");
 			}
-			if (expr.at(i) != '(') 
+			if (expr.at(i) != '(')
 				error("Missing '('!");
 
-			//GET THE ARGUMENT
+			//get the argument
 			string argument = searchClosedPar(expr, i); //Function argument
 
-			//PARSE FUNCTION
+			//parse function
 			vector<string> postfix_arg = parseInfix(argument);
 			out_queue.push_back(func);
 			out_queue.push_back(to_string(postfix_arg.size()));
 			out_queue.insert(out_queue.end(), postfix_arg.begin(), postfix_arg.end());
 
 		}
-		//Case left bracket
-		else if (token == '(')
+		else
 		{
-			//GET THE CONTENT
-			string content = searchClosedPar(expr, i); //Parenthesis content
+			//Case constant/variable
+			if (token == 'x' || token == 'e' || token == 'p')
+			{
+				out_queue.push_back(string(1, token));
+			}
+			//Case number
+			else if ((token - '0') >= 0 && (token - '0') <= 9)
+			{
+				string final_num = "";
+				do
+				{
+					final_num += expr.at(i);
+					i++;
+					if (i == expr.length()) break;
+				} while ((expr.at(i) - '0') >= 0 && (expr.at(i) - '0') <= 9 || expr.at(i) == '.');
+				i--;
 
-			vector<string> postfix_content = parseInfix(content);
-			out_queue.insert(out_queue.end(), postfix_content.begin(), postfix_content.end());
+				if (!isNumber(final_num)) error("Syntax error!");
+
+				out_queue.push_back(final_num);
+			}
+			//Case operator
+			else if (token == '+' || token == '-' || token == '*' || token == '/' || token == '^')
+			{
+				if (op_stack.size() > 0)
+					while (higherOrEqPrecOp(op_stack.top(), token))
+					{
+						out_queue.push_back(string(1, op_stack.top()));
+						op_stack.pop();
+
+						if (op_stack.size() == 0) break; //Exit if there are no elements in stack
+					}
+
+				op_stack.push(token);
+			}
+			//Case left bracket
+			else if (token == '(')
+			{
+				//GET THE CONTENT
+				string content = searchClosedPar(expr, i); //Parenthesis content
+
+				vector<string> postfix_content = parseInfix(content);
+				out_queue.insert(out_queue.end(), postfix_content.begin(), postfix_content.end());
+			}
+			//Unknow
+			else error("Unknown token!");
 		}
-		//Unknow
-		else error("Unknown token!");
 	}
 
 	//Out all ops
@@ -167,29 +183,17 @@ double parsePostfix(vector<string> postfix_expr, double x)
 	for (unsigned int i = 0; i < postfix_expr.size(); i++) {
 		char token = postfix_expr[i].at(0);
 
-		//Case var
-		if (token == 'x')
-			nums.push(x);
-		else if (token == 'e')
-			nums.push(2.71828182846);
-		else if (token == 'p')
-			nums.push(3.14159265359);
-		
-		//Case number
-		else if ((token - '0') >= 0 && (token - '0') <= 9)
-			nums.push(atof(postfix_expr[i].c_str()));
-		
-		//Case function
-		else if (isalpha(token))
+		//function case
+ 		if (isalpha(token) && postfix_expr[i].length() > 1)
 		{
 			string func = postfix_expr[i];
 			i++;
 
-			unsigned int length = stoi(postfix_expr[i].c_str()) + i + 1;
+			unsigned int stop_pos = stoi(postfix_expr[i].c_str()) + i;
 			i++;
 
 			vector<string> content;
-			for (i; i < length; i++)
+			for (i; i <= stop_pos; i++)
 				content.push_back(postfix_expr[i]);
 			i--;
 
@@ -210,46 +214,61 @@ double parsePostfix(vector<string> postfix_expr, double x)
 			else if (func == "atanh") nums.push(atanh(argument));
 			else if (func == "sqrt") nums.push(sqrt(argument));
 			else if (func == "cbrt") nums.push(cbrt(argument));
+			else if (func == "exp") nums.push(exp(argument));
 			else if (func == "ln") nums.push(log(argument));
 			else error("Unknokn function!");
 		}
-
-		//Case operator
 		else
 		{
-			double a, b, result;
-			
-			if (nums.size() < 2)
-				error("Syntax error!"); 
+			//case variable
+			if (token == 'x')
+				nums.push(x);
+			else if (token == 'e')
+				nums.push(E);
+			else if (token == 'p')
+				nums.push(PI);
 
-			b = nums.top();
-			nums.pop();
-			a = nums.top();
-			nums.pop();
+			//Case number
+			else if ((token - '0') >= 0 && (token - '0') <= 9)
+				nums.push(atof(postfix_expr[i].c_str()));
 
-			switch (token) 
+			//Case operator
+			else
 			{
-			case '+':
-				result = a + b;
-				break;
-			case '-':
-				result = a - b;
-				break;
-			case '*':
-				result = a * b;
-				break;
-			case '/':
-				if (b == 0) error("Zero division!");
-				result = a / b;
-				break;
-			case '^':
-				result = pow(a, b);
-				break;
-			default:
-				error("Unknown token!");
-			}
+				double a, b, result;
 
-			nums.push(result);
+				if (nums.size() < 2)
+					error("Syntax error!");
+
+				b = nums.top();
+				nums.pop();
+				a = nums.top();
+				nums.pop();
+
+				switch (token)
+				{
+				case '+':
+					result = a + b;
+					break;
+				case '-':
+					result = a - b;
+					break;
+				case '*':
+					result = a * b;
+					break;
+				case '/':
+					if (b == 0) error("Zero division!");
+					result = a / b;
+					break;
+				case '^':
+					result = pow(a, b);
+					break;
+				default:
+					error("Unknown token!");
+				}
+
+				nums.push(result);
+			}
 		}
 	}
 
