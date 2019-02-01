@@ -8,12 +8,16 @@
 #include <iostream>
 #include <limits.h>
 #include <vector>
+#include <map>
 #include <stdexcept>
 #include <functional>
 #include <algorithm>
 #include <time.h>
 #include "expr.h"
 #include "olcConsoleGameEngine.h"
+
+#define SCREEN_H 300
+#define SCREEN_W 300
 
 using namespace std;
 
@@ -34,7 +38,7 @@ struct Menu
 
 	vector<string> headers;
 	vector<function<void(void)>> funcs;
-	int sel = 0;
+	int item_sel = 0;
 
 	int onClose_depth; //Depth set when window is closed
 };
@@ -58,7 +62,7 @@ struct TextBox
 	int x, y, width;
 
 	string content;
-	int pos = -1; //Position in text
+	int cursor_pos = -1;
 };
 struct ListBox
 {
@@ -69,7 +73,7 @@ struct ListBox
 	vector<string> headers;
 	vector<function<void(void)>> funcs;
 
-	int sel = 0;
+	int item_sel = 0;
 };
 struct Window
 {
@@ -84,7 +88,7 @@ struct Window
 	vector<ListBox> listboxes;
 	vector<TextBox> textboxes;
 
-	function<void(void)> onEscape = []{};
+	function<void(void)> onEscape = []{}; //Function ran when esc key pressed
 
 	int onClose_depth,
 		child_focus = 0; //Element inside window focused
@@ -95,7 +99,7 @@ struct Function
 {
 	string function;
 	vector<string> postfix_code;
-	int color;
+	COLOUR color;
 };
 
 /* ENVIRONMENT CLASS */
@@ -109,7 +113,7 @@ public:
 
 private:
 	//PROGRAM PARAMETERS
-	string version = "0.1.0.2 (STABLE)";
+	string version = "0.1.0.3 (STABLE)";
 
 	//UI OBJECTS
 	vector<Function> graph_funcs;
@@ -121,15 +125,10 @@ private:
 	//Function position to be changed
 	int funceditor_funcpos;
 	
-	//Avaible colors
-	vector<string> av_colors = {
-		"BLUE", 
-		"CYAN", 
-		"GREEN", 
-		"MAGENTA", 
-		"RED", 
-		"YELLOW"
-	};
+	//All colors
+	map<string, COLOUR> color_code;
+	map<COLOUR, string> color_name;
+	map<string, bool> is_color_av;
 
 	//GRAPH VARS
 	double zoom, min_zoom, max_zoom, zoom_k,
@@ -735,10 +734,10 @@ private:
 
 		return filled_px;
 	}
-	void str_draw(int x, int y, string content, COLOUR color)
+	void str_draw(int x, int y, string content, COLOUR color, int max_width = 0)
 	{
 		int filled_px = 0;
-		for (int i = 0; i < content.length(); i++)
+		for (int i = 0; i < content.length() && (max_width == 0 || filled_px < max_width); i++)
 		{
 			vector<vector<bool>> fillers = str_getCharFillers(content[i]);
 			int width = str_getCharWidth(fillers);
@@ -746,7 +745,8 @@ private:
 			//Draw
 			for (int _y = 0; _y < 5; _y++)
 				for (int _x = 0; _x < width; _x++)
-					if (fillers[_y][_x]) Draw(_x + x + filled_px, _y + y, L' ', color);
+					if (fillers[_y][_x] && (max_width == 0 || (_x + filled_px) < max_width)) 
+						Draw(_x + x + filled_px, _y + y, L' ', color);
 
 			filled_px += width + 1; //Add space
 		}
@@ -766,13 +766,13 @@ private:
 	{
 		if (menu.focus) 
 		{
-			if (m_keys[VK_RIGHT].bPressed && menu.sel < menu.headers.size() - 1) menu.sel++;
-			if (m_keys[VK_LEFT].bPressed && menu.sel > 0) menu.sel--;
-			if (m_keys[VK_SPACE].bPressed) menu.funcs[menu.sel]();
+			if (m_keys[VK_RIGHT].bPressed && menu.item_sel < menu.headers.size() - 1) menu.item_sel++;
+			if (m_keys[VK_LEFT].bPressed && menu.item_sel > 0) menu.item_sel--;
+			if (m_keys[VK_SPACE].bPressed) menu.funcs[menu.item_sel]();
 			if (m_keys[VK_ESCAPE].bPressed)
 			{
 				changeDepth(menu.onClose_depth);
-				menu.sel = 0;
+				menu.item_sel = 0;
 			}
 		}
 	}
@@ -784,8 +784,8 @@ private:
 	{
 		if (textbox.content.length() < 256)
 		{
-			textbox.pos++;
-			textbox.content.insert(textbox.pos, string(1, c));
+			textbox.cursor_pos++;
+			textbox.content.insert(textbox.cursor_pos, string(1, c));
 		}
 	}
 	void ui_updateTextBox(TextBox &textbox)
@@ -839,14 +839,14 @@ private:
 					ui_addTextBoxChar(textbox, i - 0x40 + 'a' - 1);
 #pragma endregion
 #pragma region move
-			if (m_keys[VK_LEFT].bPressed && textbox.pos < textbox.content.length()) textbox.pos--;
-			if (m_keys[VK_RIGHT].bPressed && (textbox.pos + 1) < textbox.content.length()) textbox.pos++;
+			if (m_keys[VK_LEFT].bPressed && textbox.cursor_pos > -1) textbox.cursor_pos--;
+			if (m_keys[VK_RIGHT].bPressed && (textbox.cursor_pos + 1) < textbox.content.length()) textbox.cursor_pos++;
 #pragma endregion
 #pragma region remove
-			if ((m_keys[VK_BACK].bPressed && textbox.pos > -1) || m_keys[VK_DELETE].bPressed)
+			if ((m_keys[VK_BACK].bPressed && textbox.cursor_pos > -1) || m_keys[VK_DELETE].bPressed)
 			{
-				if (m_keys[VK_BACK].bPressed) textbox.pos--;
-				textbox.content.erase(textbox.pos + 1, 1);
+				if (m_keys[VK_BACK].bPressed) textbox.cursor_pos--;
+				textbox.content.erase(textbox.cursor_pos + 1, 1);
 			}
 #pragma endregion
 		}
@@ -855,9 +855,9 @@ private:
 	{
 		if (listbox.focus && listbox.headers.size() > 0)
 		{
-			if (m_keys[VK_UP].bPressed && listbox.sel > 0) listbox.sel--;
-			if (m_keys[VK_DOWN].bPressed && listbox.sel < listbox.headers.size() - 1) listbox.sel++;
-			if (m_keys[VK_SPACE].bPressed) listbox.funcs[listbox.sel]();
+			if (m_keys[VK_UP].bPressed && listbox.item_sel > 0) listbox.item_sel--;
+			if (m_keys[VK_DOWN].bPressed && listbox.item_sel < listbox.headers.size() - 1) listbox.item_sel++;
+			if (m_keys[VK_SPACE].bPressed) listbox.funcs[listbox.item_sel]();
 		}
 	}
 	void ui_changeWindowChild(Window &win, int target)
@@ -909,7 +909,7 @@ private:
 			{
 				int length = str_length(menu.headers[i]);
 
-				if (menu.sel == i && menu.focus) Fill(cont_x + total_length - 1, cont_y, cont_x + total_length + length, cont_y + 7, L' ', BG_BLACK);
+				if (menu.item_sel == i && menu.focus) Fill(cont_x + total_length - 1, cont_y, cont_x + total_length + length, cont_y + 7, L' ', BG_BLACK);
 				str_draw(cont_x + total_length, cont_y + 1, menu.headers[i], BG_WHITE);
 
 				total_length += length + 2;
@@ -936,29 +936,48 @@ private:
 		//Update
 		if (!changing_depth) ui_updateTextBox(textbox);
 
-		const int min_distance_txt = 7; //Minimum distance in pixel from right before shifting the text
+		const int min_distance_txt = 2; //Minimum distance in pixel from right before shifting the text
 
 		int x = textbox.x + cont_x,
 			y = textbox.y + cont_y;
 
 		Fill(x, y, x + textbox.width, y + 9, L' ', textbox.focus ? BG_DARK_GREY : BG_GREY);
 
-		string content = textbox.content.substr(0, textbox.pos);
+		/*string content = textbox.content.substr(0, textbox.cursor_pos);
 		int distance;
-		if (str_length(textbox.content.substr(0, textbox.pos + 1)) >= (textbox.width - min_distance_txt))
+		if (str_length(textbox.content.substr(0, textbox.cursor_pos)) >= (textbox.width - min_distance_txt)) //If the content is greater than what can be dysplayed
 		{
-			for (distance = textbox.pos; str_length(textbox.content.substr(distance, textbox.pos - distance + 1)) < (textbox.width - min_distance_txt) && distance > 0; distance--);
-			content = textbox.content.substr(distance, textbox.pos - distance + 1);
+			for (distance = textbox.cursor_pos; str_length(textbox.content.substr(distance, textbox.cursor_pos - distance)) < (textbox.width - min_distance_txt); distance--); //Get all the characters we can display
+			content = textbox.content.substr(distance, textbox.cursor_pos - distance - 1); //Remove another character and make the string
 		}
 		else
 		{
-			for (distance = 0; distance < textbox.content.length() && str_length(textbox.content.substr(0, distance)) < (textbox.width - min_distance_txt); distance++);
-			content = textbox.content.substr(0, distance);
+			for (distance = 0; distance < textbox.content.length() && str_length(textbox.content.substr(0, distance)) < (textbox.width - min_distance_txt); distance++); //Get all characters
+			content = textbox.content.substr(0, distance - ((distance == textbox.content.length()) ? 0 : 1)); //Remove another character if the string was too large and make the string
+		}*/
+
+		//Map string
+		vector<int> part_pos = { 0 }; //Partition position array
+		int tot_length = 0; //Total length
+		int prec_length = 0; //Last partition length
+		for (int pos = 0; pos < textbox.content.length(); pos++) //Text division in partions
+		{
+			tot_length += str_length(string(1, textbox.content.at(pos)));
+			if ((tot_length - prec_length) > (textbox.width - 2))
+			{
+				part_pos.push_back(pos);
+				prec_length = tot_length - str_length(string(1, textbox.content.at(pos)));
+			}
 		}
-		
-		str_draw(x + 1, y + 2, content, textbox.focus ? BG_BLACK : BG_DARK_GREY);
+
+		//Obtain partition number and string
+		int part_n = (int)(str_length(textbox.content.substr(0, textbox.cursor_pos + 2)) / (textbox.width - 2));
+		string content = textbox.content.substr(part_pos[part_n], textbox.content.length() - part_pos[part_n]);
+
+		str_draw(x + 1, y + 2, content, textbox.focus ? BG_BLACK : BG_DARK_GREY, textbox.width - 2);
+
 		if(textbox.focus) 
-			str_draw(x + 1 + str_length(content.substr(0, textbox.pos + 1)), y + 2, "|", BG_WHITE);
+			str_draw(x + 1 + str_length(content.substr(0, textbox.cursor_pos - part_pos[part_n] + 1)), y + 2, "|", BG_WHITE, textbox.width - 2);
 	}
 	void ui_drawListBox(ListBox &listbox, int cont_x, int cont_y)
 	{
@@ -979,10 +998,13 @@ private:
 		{
 			for (int i = 0; i < listbox.rows && i < listbox.headers.size(); i++)
 			{
-				if (listbox.sel == i)
+				if (listbox.item_sel == i)
 					Fill(x, y + i * 10, x + listbox.width, y + i * 10 + 9, L' ', listbox.focus ? BG_BLACK : BG_GREY);
 				DrawLine(x, y + i * 10 + 9, x + listbox.width - 1, y + i * 10 + 9, L' ', listbox.focus ? BG_DARK_GREY : BG_GREY);
-				str_draw(x + (listbox.width - str_length(listbox.headers[i])) / 2, y + i * 10 + 2, listbox.headers[i], (listbox.sel == i) ? BG_WHITE : listbox.focus ? BG_DARK_GREY : BG_GREY);
+				if((listbox.width - 4) > str_length(listbox.headers[i]))
+					str_draw(x + (listbox.width - str_length(listbox.headers[i])) / 2, y + i * 10 + 2, listbox.headers[i], (listbox.item_sel == i) ? BG_WHITE : listbox.focus ? BG_DARK_GREY : BG_GREY);
+				else
+					str_draw(x + 2, y + i * 10 + 2, listbox.headers[i], (listbox.item_sel == i) ? BG_WHITE : listbox.focus ? BG_DARK_GREY : BG_GREY, listbox.width - 4);
 			}
 		}
 	}
@@ -1032,33 +1054,6 @@ private:
 
 		for (int i = 0; i < graph_funcs.size(); i++)
 		{
-			//Set color
-			int color;
-			switch (graph_funcs[i].color)
-			{
-			case 'B':
-				color = BG_BLUE;
-				break;
-			case 'C':
-				color = BG_CYAN;
-				break;
-			case 'G':
-				color = BG_GREEN;
-				break;
-			case 'M':
-				color = BG_MAGENTA;
-				break;
-			case 'R':
-				color = BG_RED;
-				break;
-			case 'Y':
-				color = BG_YELLOW;
-				break;
-			default:
-				show_error("UNKNOWN COLOR!");
-				return;
-			}
-
 			//Draw function
 			double last_y = 0;
 			bool last_impossible = true;
@@ -1072,14 +1067,14 @@ private:
 				{
 					y = -parsePostfix(graph_funcs[i].postfix_code, (x - offset_x) * zoom) / zoom + offset_y;
 				}
-				catch (exception ex)
+				catch (domain_error ex)
 				{
 					impossible = true;
 				}
 
 				//Draw line if not impossible or out of screen
 				if (!last_impossible && !impossible && ((last_y > 0 && last_y < m_nScreenHeight) || (y > 0 && y < m_nScreenHeight) || (y <= 0 && last_y >= m_nScreenHeight) || (last_y <= 0 && y >= m_nScreenHeight)))
-					DrawLine(x - 1, last_y, x, y, L' ', color);
+					DrawLine(x - 1, last_y, x, y, L' ', graph_funcs[i].color);
 				
 				last_impossible = impossible;
 				last_y = y;
@@ -1098,7 +1093,7 @@ private:
 		
 	void updateFuncsListbox()
 	{
-		funcs_win.listboxes[0].sel = 0;
+		funcs_win.listboxes[0].item_sel = 0;
 		funcs_win.listboxes[0].headers = { };
 		funcs_win.listboxes[0].funcs = { };
 
@@ -1106,47 +1101,29 @@ private:
 		{
 			funcs_win.listboxes[0].headers.push_back("Y=" + graph_funcs[i].function);
 			funcs_win.listboxes[0].funcs.push_back([=] { 
-				string color;
-				switch (graph_funcs[funcs_win.listboxes[0].sel].color)
-				{
-				case 'B':
-					color = "BLUE";
-					break;
-				case 'C':
-					color = "CYAN";
-					break;
-				case 'G':
-					color = "GREEN";
-					break;
-				case 'M':
-					color = "MAGENTA";
-					break;
-				case 'R':
-					color = "RED";
-					break;
-				case 'Y':
-					color = "YELLOW";
-					break;
-				}
-				int color_pos;
-				bool greater = true;
-				for (color_pos = 0; color_pos < av_colors.size() && greater; color_pos++)
-					greater = ((int)color.at(0)) > ((int)av_colors[color_pos].at(0));
-				color_pos -= (color_pos == av_colors.size()) ? 0 : 1;
-				av_colors.insert(av_colors.begin() + color_pos, color);
-
-				openFuncEditor(i, color_pos);
+				string color = color_name[graph_funcs[funcs_win.listboxes[0].item_sel].color];
+				is_color_av[color] = true;
+				openFuncEditor(i, color);
 			});
 		}
 	}
-	void openFuncEditor(int func_pos, int color_pos)
+	void openFuncEditor(int func_pos, string color = "")
 	{
 		//func_pos == -1 -> new function
 
 		funceditor_win.textboxes[0].content = (func_pos > -1) ? graph_funcs[func_pos].function : "";
-		funceditor_win.textboxes[0].pos = -1;
-		funceditor_win.listboxes[0].headers = av_colors;
-		funceditor_win.listboxes[0].sel = color_pos;
+		funceditor_win.textboxes[0].cursor_pos = -1;
+		funceditor_win.listboxes[0].headers.clear();
+		for (auto color : color_name)
+			if (is_color_av[color.second])
+				funceditor_win.listboxes[0].headers.push_back(color.second);
+		funceditor_win.listboxes[0].item_sel = (color == "") ? 0 : distance(funceditor_win.listboxes[0].headers.begin(), find(funceditor_win.listboxes[0].headers.begin(), funceditor_win.listboxes[0].headers.end(), color));
+		if (funceditor_win.listboxes[0].item_sel >= funceditor_win.listboxes[0].headers.size())
+		{
+			show_error("UNKNOWN COLOR!");
+			return;
+		}
+
 		ui_changeWindowChild(funceditor_win, 1);
 		funceditor_funcpos = func_pos;
 
@@ -1166,6 +1143,26 @@ protected:
 	{
 		//Init random generator
 		srand(time(0));
+
+		//Init color maps
+		color_code["BLUE"] = BG_BLUE;
+		color_code["CYAN"] = BG_CYAN;
+		color_code["GREEN"] = BG_GREEN;
+		color_code["MAGENTA"] = BG_MAGENTA;
+		color_code["RED"] = BG_RED;
+		color_code["YELLOW"] = BG_YELLOW;
+		color_name[BG_BLUE] = "BLUE";
+		color_name[BG_CYAN] = "CYAN";
+		color_name[BG_GREEN] = "GREEN";
+		color_name[BG_MAGENTA] = "MAGENTA";
+		color_name[BG_RED] = "RED";
+		color_name[BG_YELLOW] = "YELLOW";
+		is_color_av["BLUE"] = true;
+		is_color_av["CYAN"] = true;
+		is_color_av["GREEN"] = true;
+		is_color_av["MAGENTA"] = true;
+		is_color_av["RED"] = true;
+		is_color_av["YELLOW"] = true;
 
 		//Init functions array
 		graph_funcs = { };
@@ -1246,8 +1243,8 @@ protected:
 		new_btn.x = 9;
 		new_btn.y = funcs_win.height - 19;
 		new_btn.func = [&] { 
-			if (av_colors.size() > 0)
-				openFuncEditor(-1, 0);
+			if (find_if(is_color_av.begin(), is_color_av.end(), [](auto color) { return color.second;}) != is_color_av.end())
+				openFuncEditor(-1);
 			else
 				show_error("FUNCS LIMIT REACHED!");
 		};
@@ -1259,35 +1256,8 @@ protected:
 		remove_btn.func = [&] { 
 			if (graph_funcs.size() > 0)
 			{
-				string color;
-				switch (graph_funcs[funcs_win.listboxes[0].sel].color)
-				{
-				case 'B':
-					color = "BLUE";
-					break;
-				case 'C':
-					color = "CYAN";
-					break;
-				case 'G':
-					color = "GREEN";
-					break;
-				case 'M':
-					color = "MAGENTA";
-					break;
-				case 'R':
-					color = "RED";
-					break;
-				case 'Y':
-					color = "YELLOW";
-					break;
-				default:
-					show_error("UNKNOWN COLOR!");
-					return;
-				}
-				av_colors.push_back(color);
- 				sort(av_colors.begin(), av_colors.end(), [](string q, string p) { return ((int)q.at(0)) < ((int)p.at(0)); });
-
-				graph_funcs.erase(graph_funcs.begin() + funcs_win.listboxes[0].sel);
+				is_color_av[color_name[graph_funcs[funcs_win.listboxes[0].item_sel].color]] = true;
+				graph_funcs.erase(graph_funcs.begin() + funcs_win.listboxes[0].item_sel);
 				updateFuncsListbox();
 				changeDepth(FUNCS_WIN);
 			}
@@ -1308,8 +1278,8 @@ protected:
 		funceditor_win.y = (m_nScreenHeight - funceditor_win.height) / 2;
 		funceditor_win.title = "NEW FUNCTION";
 		funceditor_win.onEscape = [&] {
-			if(funceditor_funcpos > -1) 
-				av_colors.erase(av_colors.begin() + funceditor_win.listboxes[0].sel); //Remove color from list
+			if (funceditor_funcpos > -1)
+				is_color_av[color_name[graph_funcs[funceditor_funcpos].color]] = false;
 		};
 		funceditor_win.onClose_depth = FUNCS_WIN;
 
@@ -1331,7 +1301,7 @@ protected:
 		ListBox colors_list;
 		colors_list.width = funceditor_win.width - 20;
 		colors_list.rows = 6;
-		colors_list.headers = av_colors;
+		colors_list.headers = {};
 		colors_list.funcs = { []() {}, []() {}, []() {}, []() {}, []() {}, []() {} };
 		colors_list.x = 10;
 		colors_list.y = 36;
@@ -1347,6 +1317,7 @@ protected:
 				Function func;
 				func.function = funceditor_win.textboxes[0].content;
 
+				//Infix try
 				try
 				{
 					func.postfix_code = parseInfix(func.function);
@@ -1356,28 +1327,23 @@ protected:
 					show_error(ex.what());
 					return;
 				}
-
-				bool done = false;
-				while (!done)
+				//Postfix try
+				try
 				{
-					try
-					{
-						parsePostfix(func.postfix_code, rand() % 1000 + (rand() % 100) / 100);
-						done = true;
-					}
-					catch (exception ex)
-					{
-						if (string(ex.what()).find("Syntax error!") != -1)
-						{
-							show_error("Syntax error!");
-							done = true;
-						}
-						return;
-					}
+					parsePostfix(func.postfix_code, rand() % 1000 + (rand() % 100) / 100);
+				}
+				catch (invalid_argument ex)
+				{
+					show_error(ex.what());
+					return;
+				}
+				catch (domain_error ex)
+				{
+					/* CALCULATION ERRORS ARE NOT HANDLED */
 				}
 
-				func.color = funceditor_win.listboxes[0].headers[funceditor_win.listboxes[0].sel].at(0);
-				av_colors.erase(av_colors.begin() + funceditor_win.listboxes[0].sel); //Remove color from list
+				func.color = color_code[funceditor_win.listboxes[0].headers[funceditor_win.listboxes[0].item_sel]];
+				is_color_av[color_name[func.color]] = false; //Remove color from list
 
 				if (funceditor_funcpos > -1) graph_funcs[funceditor_funcpos] = func;
 				else graph_funcs.push_back(func);
@@ -1398,7 +1364,7 @@ protected:
 		error_win.height = 50;
 		error_win.x = (m_nScreenWidth - error_win.width) / 2;
 		error_win.y = (m_nScreenHeight - error_win.height) / 2;
-		error_win.title = "ABOUT";
+		error_win.title = "ERROR";
 
 		Label error_text;
 		error_text.content = "";
@@ -1482,7 +1448,7 @@ protected:
 
 int main() {
 	Environment env;
-	env.ConstructConsole(300, 300, 2, 2);
+	env.ConstructConsole(SCREEN_W, SCREEN_H, 2, 2);
 	env.Start();
 
 	return 0;

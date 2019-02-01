@@ -11,9 +11,22 @@ using namespace std;
 
 #pragma once
 /* HELPERS */
-void error(const char* cause) //throw a custom error
+void error(int type, const char* cause) //throw a custom error
 {
-	throw invalid_argument(cause);
+	/*
+		type:
+			0 = Syntax error
+			1 = Calculation error
+	*/
+	switch (type)
+	{
+	case 0:
+		throw invalid_argument(cause);
+		break;
+	case 1:
+		throw domain_error(cause);
+		break;
+	}
 }
 bool isNumber(string num)
 {
@@ -52,7 +65,7 @@ string searchClosedPar(string container, unsigned int &i) //Find the closer pare
 
 		res += token;
 	}
-	if (p_opened_c > 0) error("Missing ')'!");
+	if (p_opened_c > 0) error(0, "Missing ')'!");
 	i--;
 
 	return res.substr(0, res.length() - 1);
@@ -62,7 +75,7 @@ string searchClosedPar(string container, unsigned int &i) //Find the closer pare
 vector<string> parseInfix(string in_expr)
 {
 	//Empty correction
-	if (in_expr.length() == 0) error("Argument empty!");
+	if (in_expr.length() == 0) error(0, "Argument empty!");
 
 	//First negative correction
 	string expr(in_expr.length() + 1, '\0');
@@ -98,10 +111,10 @@ vector<string> parseInfix(string in_expr)
 			{
 				func += expr.at(i);
 				i++;
-				if (i == expr.length()) error("Missing '('!");
+				if (i == expr.length()) error(0, "Missing '('!");
 			}
 			if (expr.at(i) != '(')
-				error("Missing '('!");
+				error(0, "Missing '('!");
 
 			//get the argument
 			string argument = searchClosedPar(expr, i); //Function argument
@@ -132,7 +145,7 @@ vector<string> parseInfix(string in_expr)
 				} while ((expr.at(i) - '0') >= 0 && (expr.at(i) - '0') <= 9 || expr.at(i) == '.');
 				i--;
 
-				if (!isNumber(final_num)) error("Syntax error!");
+				if (!isNumber(final_num)) error(0, "Syntax error!");
 
 				out_queue.push_back(final_num);
 			}
@@ -160,7 +173,7 @@ vector<string> parseInfix(string in_expr)
 				out_queue.insert(out_queue.end(), postfix_content.begin(), postfix_content.end());
 			}
 			//Unknow
-			else error("Unknown token!");
+			else error(0, "Unknown token!");
 		}
 	}
 
@@ -216,7 +229,7 @@ double parsePostfix(vector<string> postfix_expr, double x)
 			else if (func == "cbrt") nums.push(cbrt(argument));
 			else if (func == "exp") nums.push(exp(argument));
 			else if (func == "ln") nums.push(log(argument));
-			else error("Unknokn function!");
+			else error(0, "Unknokn function!");
 		}
 		else
 		{
@@ -238,7 +251,7 @@ double parsePostfix(vector<string> postfix_expr, double x)
 				double a, b, result;
 
 				if (nums.size() < 2)
-					error("Syntax error!");
+					error(0, "Syntax error!");
 
 				b = nums.top();
 				nums.pop();
@@ -257,14 +270,14 @@ double parsePostfix(vector<string> postfix_expr, double x)
 					result = a * b;
 					break;
 				case '/':
-					if (b == 0) error("Zero division!");
+					if (b == 0) error(1, "Zero division!");
 					result = a / b;
 					break;
 				case '^':
 					result = pow(a, b);
 					break;
 				default:
-					error("Unknown token!");
+					error(0, "Unknown token!");
 				}
 
 				nums.push(result);
