@@ -8,6 +8,7 @@
 using namespace std;
 #define E 2.71828182846
 #define PI 3.14159265359
+#define DX 0.00000000001
 
 #pragma once
 /* HELPERS */
@@ -229,6 +230,7 @@ double parsePostfix(vector<string> postfix_expr, double x)
 			else if (func == "cbrt") nums.push(cbrt(argument));
 			else if (func == "exp") nums.push(exp(argument));
 			else if (func == "ln") nums.push(log(argument));
+			else if (func == "diff") nums.push((parsePostfix(content, x + DX) - argument) / DX);
 			else error(0, "Unknokn function!");
 		}
 		else
