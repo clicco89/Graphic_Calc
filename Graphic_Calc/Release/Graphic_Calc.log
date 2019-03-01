@@ -4,29 +4,29 @@ d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\olcconsolegameengin
 d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\olcconsolegameengine.h(212): warning C4244: 'inizializzazione': conversione da 'float' a 'int'. Possibile perdita di dati.
 d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\olcconsolegameengine.h(221): warning C4244: 'inizializzazione': conversione da 'float' a 'int'. Possibile perdita di dati.
 d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\olcconsolegameengine.h(222): warning C4244: 'inizializzazione': conversione da 'float' a 'int'. Possibile perdita di dati.
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(724): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(740): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(769): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(843): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(859): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(869): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(872): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(908): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(963): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(999): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1033): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1036): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1039): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1042): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1055): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1077): warning C4244: 'argomento': conversione da 'double' a 'int'. Possibile perdita di dati.
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1100): warning C4018: '<': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1121): warning C4018: '>=': errata corrispondenza tra signed e unsigned
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1145): warning C4244: 'argomento': conversione da 'time_t' a 'unsigned int'. Possibile perdita di dati.
-d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1415): warning C4244: '=': conversione da 'double' a 'int'. Possibile perdita di dati.
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(725): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(741): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(770): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(844): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(860): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(870): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(873): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(909): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(964): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1000): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1034): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1037): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1040): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1043): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1056): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1078): warning C4244: 'argomento': conversione da 'double' a 'int'. Possibile perdita di dati.
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1101): warning C4018: '<': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1122): warning C4018: '>=': errata corrispondenza tra signed e unsigned
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1146): warning C4244: 'argomento': conversione da 'time_t' a 'unsigned int'. Possibile perdita di dati.
 d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1416): warning C4244: '=': conversione da 'double' a 'int'. Possibile perdita di dati.
+d:\users\matteo\documents\dev\vari\graphic_calc\graphic_calc\main.cpp(1417): warning C4244: '=': conversione da 'double' a 'int'. Possibile perdita di dati.
   Generazione codice in corso...
-  3 of 2287 functions ( 0.1%) were compiled, the rest were copied from previous compilation.
+  1 of 2287 functions (<0.1%) were compiled, the rest were copied from previous compilation.
     0 functions were new in current compilation
     3 functions had inline decision re-evaluated but remain unchanged
   Generazione codice terminata

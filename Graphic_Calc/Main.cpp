@@ -13,6 +13,7 @@
 #include <functional>
 #include <algorithm>
 #include <time.h>
+#include <math.h>
 #include "expr.h"
 #include "olcConsoleGameEngine.h"
 
@@ -1065,7 +1066,7 @@ private:
 
 				try
 				{
-					y = -parsePostfix(graph_funcs[i].postfix_code, (x - offset_x) * zoom) / zoom + offset_y;
+					y = offset_y - round(parsePostfix(graph_funcs[i].postfix_code, (x - offset_x) * zoom) / zoom);
 				}
 				catch (domain_error ex)
 				{

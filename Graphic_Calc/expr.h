@@ -197,7 +197,7 @@ double parsePostfix(vector<string> postfix_expr, double x)
 	for (unsigned int i = 0; i < postfix_expr.size(); i++) {
 		char token = postfix_expr[i].at(0);
 
-		//function case
+		//case function
  		if (isalpha(token) && postfix_expr[i].length() > 1)
 		{
 			string func = postfix_expr[i];
